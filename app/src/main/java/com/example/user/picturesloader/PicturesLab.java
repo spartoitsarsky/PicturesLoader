@@ -3,12 +3,18 @@ package com.example.user.picturesloader;
 import android.net.Uri;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by user on 13.09.2016.
@@ -44,14 +50,40 @@ public class PicturesLab {
 
     }
 
-    public void fetchItems() {
+    public List<Picture> fetchItems() {
+
+        List<Picture> items = new ArrayList<>();
         try {
-            String url= Uri.parse("https://api.flickr.com/services/rest/").buildUpon().appendQueryParameter("method","flickr.photos.getRecent")
-                    .appendQueryParameter("api_key",API_KEY).appendQueryParameter("format","json").build().toString();
-            String response=getString(url);
-            Log.i("JSON: ",response);
+            Log.i("PICLAB ", "b4 http");
+            String url = Uri.parse("https://api.flickr.com/services/rest/").buildUpon().appendQueryParameter("method", "flickr.photos.getRecent")
+                    .appendQueryParameter("api_key", API_KEY).appendQueryParameter("format", "json").appendQueryParameter("extras", "url_s").appendQueryParameter("nojsoncallback", "1").build().toString();
+            String response = getString(url);
+            Log.i("PICLAB ", "response: " + response);
+            JSONObject jsonObject = new JSONObject(response);
+            parseItems(items, jsonObject);
         } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("PICLAB ", "ERROR!");
+        }
+        Log.i("PICLAB ", "items.size : " + items.size());
+
+        return items;
+    }
+
+    private void parseItems(List<Picture> items, JSONObject jsonBody) throws IOException, JSONException {
+        Log.i("PICLAB ", "parse start");
+        JSONObject photosObject = jsonBody.getJSONObject("photos");
+        JSONArray photoJsonArray = photosObject.getJSONArray("photo");
+        Log.i("PICLAB ", "photoJsonArray.size: " + photoJsonArray.length());
+        for (int i = 0; i < photoJsonArray.length(); i++) {
+            JSONObject photoJsonObject = photoJsonArray.getJSONObject(i);
+            Picture pic = new Picture();
+            if (photoJsonObject.has("url_s")) {
+                pic.setUrl(photoJsonObject.getString("url_s"));
+                items.add(pic);
+            }
 
         }
+
     }
 }

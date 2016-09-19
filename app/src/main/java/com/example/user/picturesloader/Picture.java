@@ -6,7 +6,11 @@ package com.example.user.picturesloader;
 public class Picture {
     private String mUrl;
 
-    public Picture(String url) {
+    public Picture() {
+
+    }
+
+    public void setUrl(String url) {
         mUrl = url;
     }
 
