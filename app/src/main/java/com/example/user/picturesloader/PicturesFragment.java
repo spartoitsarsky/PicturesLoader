@@ -21,12 +21,16 @@ public class PicturesFragment extends Fragment {
     RecyclerView mRecyclerView;
     final static String TAG = "PicturesFragment";
     List<Picture> mPictures;
+    ThumbnailDownloader<PictureHolder> mThumbnailDownloader;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Downloader downloader= new Downloader();
         downloader.execute();
+        mThumbnailDownloader= new ThumbnailDownloader<>();
+        mThumbnailDownloader.start();
+        mThumbnailDownloader.getLooper();
 
     }
 
@@ -85,6 +89,7 @@ public class PicturesFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(PictureHolder holder, int position) {
+            mThumbnailDownloader.enqueueDownload(holder,mPictures.get(position).getUrl());
             holder.bindUrl(mPictures.get(position).getUrl());
         }
 
@@ -111,4 +116,9 @@ public class PicturesFragment extends Fragment {
         mRecyclerView.setAdapter(new PicturesAdapter(mPictures));
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mThumbnailDownloader.quit();
+    }
 }
